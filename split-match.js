@@ -59,9 +59,17 @@ PatternMatch.prototype._transform = function (chunk, encoding, getNextChunk) {
 
     while ((match = this._pattern.exec(this._inputBuffer)) !== null) {
 
+        var count = 1;
+
+        if( /^[a-zA-Z]+$/.test(match[0]) ) {
+
+            count = match[0].length;
+
+        }
+
         if (this._pattern.lastIndex < this._inputBuffer.length) {
 
-            this.push(chunk.toString().substring(nextOffset, this._pattern.lastIndex-1));
+            this.push(chunk.toString().substring(nextOffset, this._pattern.lastIndex-count));
 
             nextOffset = this._pattern.lastIndex;
 
@@ -101,12 +109,16 @@ PatternMatch.prototype._flush = function (flushCompleted) {
 
 };
 
+/*-------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------*/
+
 program
     .version('0.0.1')
     .option('-p, --pattern <pattern>', 'Input Pattern such as . ,')
     .parse(process.argv);
 
 var regex = null;
+var regexString = 0;
 
 if(program.pattern === ",") {
 
@@ -125,7 +137,6 @@ if(program.pattern === ",") {
 var inputStream = fileSystem.createReadStream('./input-sensor.txt');
 var patternStream = inputStream.pipe(new PatternMatch( regex ));
 var outputStream = [];
-
 patternStream.on('readable', function() {
 
     var content = null;
